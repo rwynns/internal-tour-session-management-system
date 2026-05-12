@@ -14,7 +14,6 @@ RUN apk add --no-cache \
     nodejs \
     npm \
     oniguruma-dev \
-    supervisor \
     unzip \
     zip
 
@@ -60,16 +59,15 @@ RUN php artisan route:cache \
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
-    && mkdir -p /var/log/supervisor
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Nginx config
 COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
-# Supervisor config to run nginx + php-fpm together
-COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Startup script
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
 
 ENV PORT=80
-EXPOSE ${PORT}
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/start.sh"]
