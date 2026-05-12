@@ -63,8 +63,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
     && mkdir -p /var/log/supervisor
 
-# Nginx config (as template — envsubst replaces $PORT at runtime)
-COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf.template
+# Nginx config
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
 # Supervisor config to run nginx + php-fpm together
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
