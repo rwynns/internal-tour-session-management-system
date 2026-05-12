@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         // --- Users ---
         User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+            ['email' => 'recreation_adm@gmail.com'],
             [
                 'name' => 'Admin',
                 'password' => Hash::make('password'),
@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'cashier@example.com'],
+            ['email' => 'cashier@gmail.com'],
             [
                 'name' => 'Cashier',
                 'password' => Hash::make('password'),
@@ -35,9 +35,9 @@ class DatabaseSeeder extends Seeder
 
         // --- Demo data (order matters: attractions → sessions → allocations) ---
         $this->call([
-            AttractionSeeder::class,
-            TourSessionSeeder::class,
-            GuestAllocationSeeder::class,
+            // AttractionSeeder::class,
+            // TourSessionSeeder::class,
+            // GuestAllocationSeeder::class,
         ]);
     }
 }

@@ -39,7 +39,7 @@ export function MoveModal({ session, sessions, onClose }: MoveModalProps) {
     );
 
     const formatTime = (dateString: string) =>
-        new Date(dateString).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        new Date(dateString).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
     function handleSelectAllocation(allocation: GuestAllocation) {
         setSelectedAllocation(allocation);

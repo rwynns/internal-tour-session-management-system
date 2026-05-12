@@ -100,8 +100,8 @@ docker compose down
 
 | Role | Email | Password |
 |------|-------|----------|
-| Recreation Admin | admin@example.com | password |
-| Cashier | cashier@example.com | password |
+| Recreation Admin | recreation_adm@gmail.com | password |
+| Cashier | cashier@gmail.com | password |
 
 ---
 
@@ -109,7 +109,7 @@ docker compose down
 
 ### Backend
 - **Laravel 13** — PHP framework
-- **Laravel Fortify** — Authentication (login, register, 2FA)
+- **Laravel Fortify** — Authentication (login)
 - **Inertia.js v3** — Server-side routing dengan client-side rendering
 - **Laravel Wayfinder** — Type-safe route generation untuk frontend
 - **SQLite** (development) / **MySQL** (production)
@@ -122,7 +122,7 @@ docker compose down
 - **Tabler Icons** — Icon set
 
 ### Testing & CI
-- **Pest v4** — Testing framework (1800+ tests)
+- **Pest v4** — Testing framework (1800+ tests, 10900+ assertions)
 - **Laravel Pint** — PHP code formatter
 - **ESLint + Prettier** — Frontend linting & formatting
 - **GitHub Actions** — CI pipeline (tests + lint)
@@ -132,19 +132,11 @@ docker compose down
 ## Fitur
 
 ### Core
-- **Authentication** — Login/register dengan Fortify, termasuk 2FA
+- **Authentication** — Login dengan Fortify
 - **Role-based access** — Recreation Admin dan Cashier dengan middleware terpisah
 - **Attraction Management** — CRUD + activate/deactivate
-- **Session Management** — CRUD + set kapasitas + ubah status + guard delete (tidak bisa hapus session dengan alokasi aktif)
+- **Session Management** — CRUD + set kapasitas + ubah status + guard (session selesai dikunci dari edit/toggle, tidak bisa hapus session dengan alokasi aktif atau session selesai yang memiliki data tamu)
 - **Guest Allocation** — Allocate, cancel, move dengan pessimistic locking untuk race condition
-
-### Business Rules
-- Validasi kapasitas (tidak boleh melebihi max_capacity)
-- Session inactive tidak bisa dipilih untuk alokasi
-- Session yang sudah lewat tidak bisa menerima alokasi baru
-- Reallocation atomic (occupancy kedua session diupdate dalam satu transaksi, lock order konsisten untuk mencegah deadlock)
-
-### Bonus
 - Dashboard occupancy (admin: overview hari ini, cashier: session board)
 - Search/filtering (cashier: filter by attraction + search by guest name)
 - Seeder/demo data (7 attractions, 60+ sessions, 70+ allocations realistis)
@@ -152,66 +144,3 @@ docker compose down
 - Table sorting/pagination (attractions & sessions)
 - CI/CD (GitHub Actions: tests + lint)
 - Clean UI/UX (Tailwind + shadcn, responsive, dark mode)
-
----
-
-## Arsitektur & Keputusan Teknis
-
-### Single Dashboard Route
-`/dashboard` menampilkan halaman berbeda berdasarkan role user:
-- Admin → overview occupancy + quick actions
-- Cashier → session board dengan allocate/move/cancel
-
-Alasan: satu entry point lebih simpel, tidak perlu redirect logic setelah login.
-
-### Pessimistic Locking untuk Alokasi
-Menggunakan `lockForUpdate()` dalam transaksi database untuk mencegah race condition ketika dua cashier mencoba mengalokasikan slot terakhir secara bersamaan.
-
-### Atomic Move Operation
-Saat memindahkan tamu, kedua session di-lock dalam urutan ID yang konsisten (ascending) untuk mencegah deadlock, lalu occupancy diupdate dalam satu transaksi.
-
-### Activity Log
-Service class `ActivityLogger` yang dipanggil dari controller setelah setiap mutasi. Sederhana, tidak menggunakan package external — cukup satu tabel dan satu model.
-
-### Session Delete Guard
-Session dengan alokasi tamu aktif tidak bisa dihapus. Ini mencegah data inconsistency dimana guest_allocations mereferensi session yang sudah tidak ada.
-
----
-
-## Assumptions
-
-1. **Sistem internal** — tidak ada public registration. User dibuat melalui seeder atau admin.
-2. **Satu venue** — tidak ada multi-tenant. Semua data dalam satu konteks venue.
-3. **Timezone tunggal** — semua waktu menggunakan timezone server (Asia/Jakarta).
-4. **Pax = jumlah orang** — satu alokasi bisa untuk grup (pax > 1).
-5. **Source bersifat free text** — tidak di-enum karena bisa bervariasi (walk-in, phone, travel-agent, online, dll).
-6. **Session tidak recurring** — setiap session adalah slot individual, bukan template berulang.
-7. **Cancel = soft status change** — alokasi yang dibatalkan tidak dihapus dari database, hanya status berubah ke 'cancelled'.
-
----
-
-## Tradeoffs
-
-1. **SQLite untuk development** — lebih mudah setup tanpa install MySQL/PostgreSQL. Production menggunakan MySQL di Railway.
-2. **Tidak ada real-time update** — dashboard tidak auto-refresh. Cashier perlu reload halaman untuk melihat perubahan dari cashier lain. Bisa ditambahkan dengan Laravel Reverb/Pusher jika diperlukan.
-3. **Activity log sederhana** — tidak menggunakan package seperti spatie/laravel-activitylog. Cukup untuk kebutuhan audit trail dasar tanpa menambah dependency.
-4. **Tidak ada soft delete** — attraction dan session yang dihapus benar-benar hilang. Untuk production sebenarnya lebih baik soft delete, tapi untuk scope assessment ini cukup hard delete dengan guard.
-5. **Frontend filtering client-side untuk cashier** — session grouping (active/past) dilakukan di frontend karena jumlah data terbatas (hanya hari ini ke depan).
-6. **Tidak ada export/report** — bukan requirement, bisa ditambahkan jika diperlukan.
-
----
-
-## AI Usage
-
-Proyek ini dikembangkan dengan bantuan AI tools:
-
-- **Kiro (Claude)** — digunakan untuk scaffolding awal, implementasi business logic, penulisan test, dan code review. AI membantu mempercepat implementasi tapi semua keputusan arsitektur dan teknis di-review dan dipahami sebelum diterima.
-
-Penggunaan AI difokuskan pada:
-- Generasi boilerplate code (migrations, factories, seeders)
-- Implementasi business logic dengan edge case handling
-- Penulisan test suite yang komprehensif
-- Refactoring dan code organization
-- Debugging dan fixing issues
-
-Semua kode yang dihasilkan AI telah di-review, dipahami, dan disesuaikan sesuai kebutuhan. Kandidat mampu menjelaskan setiap keputusan teknis yang diambil.

@@ -23,6 +23,10 @@ type AllocationModalProps = {
 export function AllocationModal({ session, onClose }: AllocationModalProps) {
     const form = useForm({ guest_name: '', pax: 1, source: '', notes: '' });
 
+    const remainingCapacity = session
+        ? session.max_capacity - session.current_pax
+        : 0;
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
@@ -89,11 +93,15 @@ export function AllocationModal({ session, onClose }: AllocationModalProps) {
                             id="pax"
                             type="number"
                             min={1}
+                            max={remainingCapacity}
                             value={form.data.pax}
                             onChange={(e) => form.setData('pax', parseInt(e.target.value, 10) || 1)}
                             aria-invalid={!!form.errors.pax}
                             disabled={form.processing}
                         />
+                        <p className="text-xs text-muted-foreground">
+                            Sisa kapasitas: <span className="font-semibold">{remainingCapacity}</span>
+                        </p>
                         <InputError message={form.errors.pax} />
                     </div>
 

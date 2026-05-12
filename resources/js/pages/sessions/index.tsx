@@ -71,6 +71,7 @@ function SortableHeader({
 function SessionToggle({ session }: { session: Session }) {
     const [processing, setProcessing] = React.useState(false);
     const isActive = session.status === 'active';
+    const isPast = new Date(session.end_time) < new Date();
 
     function handleToggle() {
         const willActivate = !isActive;
@@ -101,6 +102,14 @@ function SessionToggle({ session }: { session: Session }) {
         });
     }
 
+    if (isPast) {
+        return (
+            <span className="rounded bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Selesai
+            </span>
+        );
+    }
+
     return (
         <button
             type="button"
@@ -124,6 +133,8 @@ function SessionToggle({ session }: { session: Session }) {
 
 function DeleteButton({ session }: { session: Session }) {
     const { delete: deleteSession, processing } = useForm({});
+    const isPast = new Date(session.end_time) < new Date();
+    const isLockedPast = isPast && session.current_pax > 0;
 
     function handleDelete() {
         toast('Hapus Session ini?', {
@@ -145,9 +156,10 @@ function DeleteButton({ session }: { session: Session }) {
     return (
         <button
             type="button"
-            disabled={processing}
+            disabled={processing || isLockedPast}
             onClick={handleDelete}
-            className="rounded px-2.5 py-1 text-xs font-medium text-destructive ring-1 ring-destructive/30 transition-all hover:bg-destructive hover:text-destructive-foreground disabled:opacity-40"
+            title={isLockedPast ? 'Session selesai dengan data tamu tidak dapat dihapus' : undefined}
+            className="rounded px-2.5 py-1 text-xs font-medium text-destructive ring-1 ring-destructive/30 transition-all hover:bg-destructive hover:text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-40"
         >
             {processing ? '…' : 'Hapus'}
         </button>
@@ -165,7 +177,7 @@ function OccupancyBar({ current, max }: { current: number; max: number }) {
 }
 
 function formatTime(iso: string) {
-    return new Date(iso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 }
 
 function formatDate(iso: string) {
@@ -174,6 +186,7 @@ function formatDate(iso: string) {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
+        timeZone: 'Asia/Jakarta',
     });
 }
 
@@ -412,12 +425,21 @@ export default function SessionsIndex({ sessions, attractions, filters }: Props)
                                         {/* Aksi */}
                                         <td className="py-4 pl-4">
                                             <div className="flex items-center gap-2 opacity-70 transition-opacity group-hover:opacity-100">
-                                                <Link
-                                                    href={edit.url(session.id)}
-                                                    className="rounded px-2.5 py-1 text-xs font-medium text-foreground ring-1 ring-border transition-all hover:bg-muted"
-                                                >
-                                                    Edit
-                                                </Link>
+                                                {new Date(session.end_time) < new Date() ? (
+                                                    <span
+                                                        className="rounded px-2.5 py-1 text-xs font-medium text-muted-foreground ring-1 ring-border cursor-not-allowed opacity-40"
+                                                        title="Session selesai tidak dapat diedit"
+                                                    >
+                                                        Edit
+                                                    </span>
+                                                ) : (
+                                                    <Link
+                                                        href={edit.url(session.id)}
+                                                        className="rounded px-2.5 py-1 text-xs font-medium text-foreground ring-1 ring-border transition-all hover:bg-muted"
+                                                    >
+                                                        Edit
+                                                    </Link>
+                                                )}
                                                 <DeleteButton session={session} />
                                                 {session.current_pax > 0 && (
                                                     <button

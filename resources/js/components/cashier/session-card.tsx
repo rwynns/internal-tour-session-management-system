@@ -17,7 +17,7 @@ export function SessionCard({ session, onAllocate, onMove }: SessionCardProps) {
     const isDisabled = isPast || isInactive;
 
     const formatTime = (dateString: string) =>
-        new Date(dateString).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        new Date(dateString).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
     const timeSlot = `${formatTime(session.start_time)} - ${formatTime(session.end_time)}`;
     const attractionName = session.attraction?.name ?? 'Unknown Attraction';

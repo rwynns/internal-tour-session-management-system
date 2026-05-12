@@ -342,13 +342,14 @@ function TicketCard({ session, index, onAllocate, onMove, muted = false }: Ticke
     const isAllocateDisabled = isDisabled || isFull;
 
     const fmt = (d: string) =>
-        new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        new Date(d).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
     const fmtDate = (d: string) =>
         new Date(d).toLocaleDateString('id-ID', {
             weekday: 'short',
             day: 'numeric',
             month: 'short',
+            timeZone: 'Asia/Jakarta',
         });
 
     // Use CSS vars so it respects dark mode
@@ -483,14 +484,14 @@ function TicketCard({ session, index, onAllocate, onMove, muted = false }: Ticke
                                 {showGuests ? 'Hide' : 'Show'} guests
                             </span>
                             <span className="font-mono tabular-nums">
-                                {session.allocations?.filter((a) => a.status === 'active').length ?? session.current_pax} active
+                                {session.active_allocations?.length ?? session.current_pax} active
                                 <span className="ml-1.5 opacity-50">{showGuests ? '▲' : '▼'}</span>
                             </span>
                         </button>
 
                         {showGuests && (
                             <div className="mt-2 rounded-lg border border-border/60 bg-background/60 px-3 py-1">
-                                <AllocationsList allocations={session.allocations ?? []} />
+                                <AllocationsList allocations={session.active_allocations ?? []} />
                             </div>
                         )}
                     </>

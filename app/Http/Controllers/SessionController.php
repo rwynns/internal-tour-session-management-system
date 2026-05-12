@@ -63,9 +63,10 @@ class SessionController extends Controller
      */
     public function store(StoreSessionRequest $request): RedirectResponse
     {
-        Session::create($request->validated());
+        $session = Session::create($request->validated());
+        $session->load('attraction');
 
-        ActivityLogger::log('created', 'Session', null, "Session baru untuk \"{$request->input('attraction_id')}\" dibuat.");
+        ActivityLogger::log('created', 'Session', $session->id, "Session baru untuk \"{$session->attraction?->name}\" ({$session->start_time->format('d M Y H:i')}) dibuat.");
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Session created successfully.']);
 
@@ -74,9 +75,19 @@ class SessionController extends Controller
 
     /**
      * Show the form for editing the specified session.
+     * Past sessions cannot be edited.
      */
-    public function edit(Session $session): Response
+    public function edit(Session $session): Response|RedirectResponse
     {
+        if ($session->end_time->isPast()) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Session yang sudah selesai tidak dapat diedit.',
+            ]);
+
+            return to_route('sessions.index');
+        }
+
         return Inertia::render('sessions/edit', [
             'session' => $session,
             'attractions' => Attraction::where('is_active', true)->orderBy('name')->get(),
@@ -85,9 +96,19 @@ class SessionController extends Controller
 
     /**
      * Update the specified session in storage.
+     * Past sessions cannot be updated.
      */
     public function update(UpdateSessionRequest $request, Session $session): RedirectResponse
     {
+        if ($session->end_time->isPast()) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Session yang sudah selesai tidak dapat diedit.',
+            ]);
+
+            return to_route('sessions.index');
+        }
+
         $session->update($request->validated());
 
         ActivityLogger::log('updated', 'Session', $session->id, "Session \"{$session->attraction?->name}\" ({$session->start_time->format('d M Y H:i')}) diperbarui.");
@@ -100,10 +121,20 @@ class SessionController extends Controller
     /**
      * Remove the specified session from storage.
      * Prevents deletion if the session has active guest allocations.
+     * Past sessions with any guests (active or cancelled) cannot be deleted.
      */
     public function destroy(Session $session): RedirectResponse
     {
         $session->load('attraction');
+
+        if ($session->end_time->isPast() && $session->current_pax > 0) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Session yang sudah selesai dan memiliki data tamu tidak dapat dihapus.',
+            ]);
+
+            return back();
+        }
 
         if ($session->activeAllocations()->exists()) {
             Inertia::flash('toast', [
@@ -127,9 +158,19 @@ class SessionController extends Controller
 
     /**
      * Update the status of the specified session.
+     * Past sessions cannot have their status changed.
      */
     public function updateStatus(Request $request, Session $session): RedirectResponse
     {
+        if ($session->end_time->isPast()) {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'Status session yang sudah selesai tidak dapat diubah.',
+            ]);
+
+            return back();
+        }
+
         $request->validate([
             'status' => ['required', 'in:active,inactive'],
         ]);

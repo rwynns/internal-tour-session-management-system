@@ -211,7 +211,7 @@ function SessionRow({ session }: { session: Session }) {
     const isInactive = session.status === 'inactive';
 
     const fmt = (d: string) =>
-        new Date(d).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        new Date(d).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' });
 
     const barColor = isFull
         ? 'bg-destructive'
