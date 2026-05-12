@@ -1,0 +1,44 @@
+name: Lint & Format
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Check PHP code style (Pint)
+        run: composer lint:check
+
+      - name: Check frontend formatting (Prettier)
+        run: npm run format:check
+
+      - name: Lint frontend (ESLint)
+        run: npm run lint:check
+
+      - name: Check TypeScript types
+        run: npm run types:check

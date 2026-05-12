@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build artifacts
+public/build/
+public/hot
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE & editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+tests/
+phpunit.xml
+
+# Docker
+docker-compose.yml
+Dockerfile
+docker/
+
+# Kiro / AI tools
+.kiro/
+.agents/
+.claude/
+.cursor/
+.gemini/
+
+# Logs
+storage/logs/*.log
+
+# SQLite (use MySQL in Docker)
+database/database.sqlite
+
+# Docs
+README.md
+*.md

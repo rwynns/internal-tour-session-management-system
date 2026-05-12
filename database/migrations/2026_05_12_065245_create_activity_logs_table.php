@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('activity_logs', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('action');           // e.g. 'created', 'updated', 'deleted', 'allocated', 'cancelled', 'moved'
+            $table->string('subject_type');     // e.g. 'Attraction', 'Session', 'GuestAllocation'
+            $table->unsignedBigInteger('subject_id')->nullable();
+            $table->string('description');      // human-readable summary
+            $table->json('metadata')->nullable(); // optional extra context
+            $table->timestamps();
+
+            $table->index(['subject_type', 'subject_id']);
+            $table->index('user_id');
+            $table->index('created_at');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('activity_logs');
+    }
+};
