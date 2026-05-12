@@ -30,10 +30,8 @@ Thumbs.db
 tests/
 phpunit.xml
 
-# Docker
+# Docker (only exclude compose for production)
 docker-compose.yml
-Dockerfile
-docker/
 
 # Kiro / AI tools
 .kiro/
