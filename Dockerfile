@@ -1,16 +1,5 @@
-# ── Stage 1: Build frontend assets ──────────────────────────────────────────
-FROM node:22-alpine AS frontend
-
-WORKDIR /app
-
-COPY package.json package-lock.json* pnpm-lock.yaml* ./
-RUN npm install
-
-COPY . .
-RUN npm run build
-
-# ── Stage 2: Production PHP image ────────────────────────────────────────────
-FROM php:8.3-fpm-alpine AS production
+# ── Single-stage production image ────────────────────────────────────────────
+FROM php:8.3-fpm-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
@@ -22,6 +11,8 @@ RUN apk add --no-cache \
     libwebp-dev \
     libzip-dev \
     nginx \
+    nodejs \
+    npm \
     oniguruma-dev \
     supervisor \
     unzip \
@@ -57,13 +48,13 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Copy built frontend assets from stage 1
-COPY --from=frontend /app/public/build ./public/build
-
 # Install PHP dependencies (production only)
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-# Cache routes and views (config cache needs env vars at runtime)
+# Install Node dependencies and build frontend (needs PHP for wayfinder plugin)
+RUN npm install && npm run build && rm -rf node_modules
+
+# Cache routes and views
 RUN php artisan route:cache \
     && php artisan view:cache
 
