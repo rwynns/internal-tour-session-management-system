@@ -35,9 +35,9 @@ class DatabaseSeeder extends Seeder
 
         // --- Demo data (order matters: attractions → sessions → allocations) ---
         $this->call([
-            // AttractionSeeder::class,
-            // TourSessionSeeder::class,
-            // GuestAllocationSeeder::class,
+            AttractionSeeder::class,
+            TourSessionSeeder::class,
+            GuestAllocationSeeder::class,
         ]);
     }
 }
