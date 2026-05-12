@@ -1,1 +1,1 @@
-{"build":{"builder":"DOCKERFILE","dockerfilePath":"Dockerfile"},"deploy":{"preDeployCommand":"php artisan migrate --force && php artisan db:seed --force"}}
+{"$schema":"https://railway.com/railway.schema.json","deploy":{"preDeployCommand":"php artisan migrate --force && php artisan db:seed --force"}}
