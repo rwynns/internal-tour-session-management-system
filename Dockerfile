@@ -61,14 +61,16 @@ COPY . .
 COPY --from=frontend /app/public/build ./public/build
 
 # Install PHP dependencies (production only)
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev \
-    && php artisan config:cache \
-    && php artisan route:cache \
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+# Cache routes and views (config cache needs env vars at runtime)
+RUN php artisan route:cache \
     && php artisan view:cache
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+    && mkdir -p /var/log/supervisor
 
 # Nginx config
 COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
